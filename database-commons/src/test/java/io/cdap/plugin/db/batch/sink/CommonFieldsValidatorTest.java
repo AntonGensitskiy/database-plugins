@@ -135,13 +135,9 @@ public class CommonFieldsValidatorTest {
     resultSet.addColumns(columns);
     resultSet.setResultSetMetaData(resultSetMetaData);
 
-    try {
-      VALIDATOR.validateFields(schema, resultSet);
-      Assert.fail(String.format("Expected to throw %s", IllegalArgumentException.class.getName()));
-    } catch (IllegalArgumentException e) {
-      String errorMessage = "Couldn't find matching database column(s) for input field(s) 'SCORE'.";
-      Assert.assertEquals(errorMessage, e.getMessage());
-    }
+    Set<String> invalidFields = VALIDATOR.validateFields(schema, resultSet);
+    Assert.assertEquals(1, invalidFields.size());
+    Assert.assertEquals("SCORE", invalidFields.iterator().next());
   }
 
   @Test
@@ -174,13 +170,9 @@ public class CommonFieldsValidatorTest {
     resultSet.addColumns(columns);
     resultSet.setResultSetMetaData(resultSetMetaData);
 
-    try {
-      VALIDATOR.validateFields(schema, resultSet);
-      Assert.fail(String.format("Expected to throw %s", IllegalArgumentException.class.getName()));
-    } catch (IllegalArgumentException e) {
-      String errorMessage = "Couldn't find matching database column(s) for input field(s) 'SCORE'.";
-      Assert.assertEquals(errorMessage, e.getMessage());
-    }
+    Set<String> invalidFields = VALIDATOR.validateFields(schema, resultSet);
+    Assert.assertEquals(1, invalidFields.size());
+    Assert.assertEquals("SCORE", invalidFields.iterator().next());
   }
 
   public void validateFieldCompatible(Schema.Type fieldType, Schema.LogicalType fieldLogicalType, int sqlType,

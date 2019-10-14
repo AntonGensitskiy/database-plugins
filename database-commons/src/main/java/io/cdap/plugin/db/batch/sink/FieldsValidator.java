@@ -21,6 +21,7 @@ import io.cdap.cdap.api.data.schema.Schema;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Set;
 
 /**
  * Main Interface to validate db fields.
@@ -32,8 +33,9 @@ public interface FieldsValidator {
    *
    * @param inputSchema input schema.
    * @param resultSet   resultSet with database fields.
+   * @return set of invalid fields
    */
-  void validateFields(Schema inputSchema, ResultSet resultSet) throws SQLException;
+  Set<String> validateFields(Schema inputSchema, ResultSet resultSet) throws SQLException;
 
   /**
    * Checks if field is compatible to be written into database column of the given sql index.

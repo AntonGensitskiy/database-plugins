@@ -35,7 +35,7 @@ public class CommonFieldsValidator implements FieldsValidator {
   protected static final Logger LOG = LoggerFactory.getLogger(CommonFieldsValidator.class);
 
   @Override
-  public void validateFields(Schema inputSchema, ResultSet resultSet) throws SQLException {
+  public Set<String> validateFields(Schema inputSchema, ResultSet resultSet) throws SQLException {
     ResultSetMetaData rsMetaData = resultSet.getMetaData();
 
     Preconditions.checkNotNull(inputSchema.getFields());
@@ -63,9 +63,7 @@ public class CommonFieldsValidator implements FieldsValidator {
       }
     }
 
-    Preconditions.checkArgument(invalidFields.isEmpty(),
-                                "Couldn't find matching database column(s) for input field(s) '%s'.",
-                                String.join(",", invalidFields));
+    return invalidFields;
   }
 
   /**
