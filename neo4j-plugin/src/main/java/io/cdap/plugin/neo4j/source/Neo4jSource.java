@@ -26,10 +26,11 @@ import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.api.dataset.lib.KeyValue;
 import io.cdap.cdap.api.plugin.PluginProperties;
 import io.cdap.cdap.etl.api.Emitter;
+import io.cdap.cdap.etl.api.FailureCollector;
 import io.cdap.cdap.etl.api.PipelineConfigurer;
 import io.cdap.cdap.etl.api.batch.BatchRuntimeContext;
+import io.cdap.cdap.etl.api.batch.BatchSource;
 import io.cdap.cdap.etl.api.batch.BatchSourceContext;
-import io.cdap.cdap.etl.api.validation.InvalidConfigPropertyException;
 import io.cdap.cdap.internal.io.SchemaTypeAdapter;
 import io.cdap.plugin.common.ReferenceBatchSource;
 import io.cdap.plugin.common.ReferencePluginConfig;
@@ -52,15 +53,15 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Objects;
 import java.util.Properties;
 
 /**
  * Batch source to read from Neo4j.
  */
-@Plugin(type = "batchsource")
+@Plugin(type = BatchSource.PLUGIN_TYPE)
 @Name(Neo4jSource.NAME)
-@Description("")
+@Description("Reads from a Neo4j instance using a configurable CQL query. " +
+  "Outputs one record for each row returned by the query.")
 public class Neo4jSource extends ReferenceBatchSource<LongWritable, Neo4jRecord, StructuredRecord> {
   public static final String NAME = "Neo4jSource";
   private static final Logger LOG = LoggerFactory.getLogger(Neo4jSource.class);
@@ -85,11 +86,8 @@ public class Neo4jSource extends ReferenceBatchSource<LongWritable, Neo4jRecord,
   @Override
   public void configurePipeline(PipelineConfigurer pipelineConfigurer) {
     super.configurePipeline(pipelineConfigurer);
-    config.validate();
-    if (Objects.isNull(config.getUsername()) && Objects.nonNull(config.getPassword())) {
-      throw new InvalidConfigPropertyException("user", "user is null. Please provide both user name and password if " +
-        "database requires authentication. If not, please remove password and retry.");
-    }
+    FailureCollector collector = pipelineConfigurer.getStageConfigurer().getFailureCollector();
+    config.validate(collector);
 
     Class<? extends Driver> driverClass = pipelineConfigurer.usePluginClass(
       ConnectionConfig.JDBC_PLUGIN_TYPE,
@@ -111,7 +109,9 @@ public class Neo4jSource extends ReferenceBatchSource<LongWritable, Neo4jRecord,
 
   @Override
   public void prepareRun(BatchSourceContext context) throws Exception {
-    config.validate();
+    FailureCollector collector = context.getFailureCollector();
+    config.validate(collector);
+    collector.getOrThrowException();
 
     ConnectionConfigAccessor connectionConfigAccessor = new ConnectionConfigAccessor();
     Class<? extends Driver> driverClass = context.loadPluginClass(getJDBCPluginId());
@@ -176,7 +176,6 @@ public class Neo4jSource extends ReferenceBatchSource<LongWritable, Neo4jRecord,
 
   private Connection getConnection() throws SQLException {
     String connectionString = config.getConnectionString();
-    LOG.debug(connectionString);
     return DriverManager.getConnection(connectionString);
   }
 

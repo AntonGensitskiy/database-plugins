@@ -94,8 +94,7 @@
         <configuration>
           <instructions>
             <_exportcontents>
-              io.cdap.plugin.*;
-              org.apache.commons.lang;
+              io.cdap.plugin.neo4j.*;
               org.apache.commons.logging.*;
               org.codehaus.jackson.*
             </_exportcontents>

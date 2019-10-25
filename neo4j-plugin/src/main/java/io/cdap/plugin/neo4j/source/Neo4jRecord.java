@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * Writable class for Neo4j Source/Sink.
  */
 public class Neo4jRecord extends DBRecord {
   private static final Logger LOG = LoggerFactory.getLogger(Neo4jRecord.class);

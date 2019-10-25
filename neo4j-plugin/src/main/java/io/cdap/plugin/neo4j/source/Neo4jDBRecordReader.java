@@ -29,7 +29,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- *
+ * A RecordReader that reads records from a Neo4j.
  * @param <T>
  */
 public class Neo4jDBRecordReader<T extends DBWritable> extends DBRecordReader<T> {
@@ -57,7 +57,8 @@ public class Neo4jDBRecordReader<T extends DBWritable> extends DBRecordReader<T>
       query.append(" SKIP ").append(getSplit().getStart());
       query.append(" LIMIT ").append(getSplit().getLength());
     } catch (IOException ex) {
-      // Ignore, will not throw.
+      // should never happen
+      throw new IllegalStateException(ex);
     }
     return query.toString();
   }

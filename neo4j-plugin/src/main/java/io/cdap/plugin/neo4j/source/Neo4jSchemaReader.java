@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * Neo4j schema reader for mapping Neo4j DB types.
  */
 public class Neo4jSchemaReader extends CommonSchemaReader {
 
@@ -104,22 +104,11 @@ public class Neo4jSchemaReader extends CommonSchemaReader {
       case Types.JAVA_OBJECT:
         if (rs.getObject(index) instanceof Map) {
           Map map = rs.getObject(index, Map.class);
-          List<Schema.Field> fields = new ArrayList<>();
-          map.keySet().forEach(k -> {
-            Object o = map.get(k);
-            if (o instanceof List) {
-              List l = ((List) map.get(k));
-              Class subClass = !l.isEmpty() ? l.get(0).getClass() : String.class;
-              fields.add(Schema.Field.of((String) k, Schema.arrayOf(getSubSchema(subClass))));
-            } else {
-              fields.add(Schema.Field.of((String) k, getSubSchema(o.getClass())));
-            }
-          });
           String columnName = metadata.getColumnName(index).replace("}", "")
             .replace(" ", "_")
             .replace(".", "_")
             .replace("(", "_");
-          return Schema.recordOf(columnName, fields);
+          return processMapObject(columnName, map);
         }
         if (rs.getObject(index) instanceof byte[]) {
           type = Schema.Type.BYTES;
@@ -145,6 +134,23 @@ public class Neo4jSchemaReader extends CommonSchemaReader {
     }
 
     return Schema.of(type);
+  }
+
+  private Schema processMapObject(String fieldName, Map mapObject) {
+    List<Schema.Field> fields = new ArrayList<>();
+    mapObject.keySet().forEach(k -> {
+      Object o = mapObject.get(k);
+      if (o instanceof List) {
+        List l = ((List) mapObject.get(k));
+        Class subClass = !l.isEmpty() ? l.get(0).getClass() : String.class;
+        fields.add(Schema.Field.of((String) k, Schema.arrayOf(getSubSchema(subClass))));
+      } else if (o instanceof Map) {
+        fields.add(Schema.Field.of((String) k, processMapObject((String) k, (Map) o)));
+      } else {
+        fields.add(Schema.Field.of((String) k, getSubSchema(o.getClass())));
+      }
+    });
+    return Schema.recordOf(fieldName, fields);
   }
 
   private Schema getSubSchema(Class objClass) {

@@ -36,7 +36,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 /**
- *
+ * A InputFormat that reads input data from an Neo4j.
  * @param <T>
  */
 public class Neo4jDataDriveDBInputFormat<T extends DBWritable> extends DBInputFormat {
@@ -124,6 +124,13 @@ public class Neo4jDataDriveDBInputFormat<T extends DBWritable> extends DBInputFo
   @Override
   protected String getCountQuery() {
     String query = dbConf.getInputQuery();
-    return query.substring(0, query.indexOf("RETURN")) + "RETURN COUNT(*)";
+    StringBuilder sb = new StringBuilder();
+    for (String s : query.split(" ")) {
+      if (s.toUpperCase().equals("RETURN")) {
+        sb.append(query, 0, query.indexOf(s)).append("RETURN COUNT(*)");
+        break;
+      }
+    }
+    return sb.toString();
   }
 }

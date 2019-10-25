@@ -17,18 +17,24 @@
 package io.cdap.plugin.neo4j.source;
 
 import io.cdap.cdap.api.annotation.Description;
+import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.plugin.PluginConfig;
+import io.cdap.cdap.etl.api.FailureCollector;
 
 import java.util.Arrays;
+import java.util.List;
 import javax.annotation.Nullable;
 
 /**
- * Batch source to read from Neo4j.
+ * Config for Neo4j Source plugin
  */
 public class Neo4jSourceConfig extends PluginConfig {
 
   public static final String NEO4J_CONNECTION_STRING_FORMAT = "jdbc:neo4j:bolt://%s:%s/?username=%s,password=%s";
+  private static final List<String> unavailableQueryKeywords =
+    Arrays.asList("UNWIND", "CREATE", "DELETE", "SET", "REMOVE", "MERGE");
+  private static final List<String> requiredQueryKeywords = Arrays.asList("MATCH", "RETURN");
 
   public static final String REFERENCE_NAME = "referenceName";
   public static final String NAME_HOST_STRING = "neo4jHost";
@@ -43,18 +49,22 @@ public class Neo4jSourceConfig extends PluginConfig {
   @Description("This will be used to uniquely identify this source for lineage, annotating metadata, etc.")
   private String referenceName;
 
+  @Macro
   @Name(NAME_HOST_STRING)
   @Description("Neo4j database host.")
   private String neo4jHost;
 
+  @Macro
   @Name(NAME_PORT_STRING)
   @Description("Neo4j database port.")
   private int neo4jPort;
 
+  @Macro
   @Name(NAME_USERNAME)
   @Description("User to use to connect to the Neo4j database.")
   private String username;
 
+  @Macro
   @Name(NAME_PASSWORD)
   @Description("Password to use to connect to the Neo4j database.")
   private String password;
@@ -64,11 +74,13 @@ public class Neo4jSourceConfig extends PluginConfig {
     "Query example: 'MATCH (n:Label) RETURN n.property_1, n.property_2'.")
   private String inputQuery;
 
+  @Macro
   @Nullable
   @Name(NAME_SPLIT_NUM)
   @Description("The number of splits to generate. If set to one, the orderBy is not needed.")
   private Integer splitNum;
 
+  @Macro
   @Nullable
   @Name(NAME_ORDER_BY)
   @Description("Field Name which will be used for ordering during splits generation. " +
@@ -152,30 +164,38 @@ public class Neo4jSourceConfig extends PluginConfig {
                          getUsername(), getPassword());
   }
 
-  public void validate() {
-    String[] unavailableQueryKeywords = new String[] {"UNWIND", "CREATE", "DELETE", "SET", "REMOVE", "MERGE"};
-    String[] requiredQueryKeywords = new String[] {"MATCH", "RETURN"};
-
-    if (Arrays.stream(unavailableQueryKeywords).parallel().anyMatch(inputQuery.toUpperCase()::contains)) {
-      throw new IllegalArgumentException(
+  public void validate(FailureCollector collector) {
+    if (unavailableQueryKeywords.stream().parallel().anyMatch(inputQuery.toUpperCase()::contains)) {
+      collector.addFailure(
         String.format("The input request must not contain any of the following keywords: '%s'",
-                      Arrays.toString(unavailableQueryKeywords)));
+                      unavailableQueryKeywords.toString()),
+        "Proved correct Input query.")
+        .withConfigProperty(NAME_INPUT_QUERY);
     }
-    if (!Arrays.stream(requiredQueryKeywords).parallel().allMatch(inputQuery.toUpperCase()::contains)) {
-      throw new IllegalArgumentException(
+    if (!requiredQueryKeywords.stream().parallel().allMatch(inputQuery.toUpperCase()::contains)) {
+      collector.addFailure(
         String.format("The input request must contain following keywords: '%s'",
-                      Arrays.toString(requiredQueryKeywords)));
+                      requiredQueryKeywords.toString()),
+        "Proved correct Input query.")
+        .withConfigProperty(NAME_INPUT_QUERY);
     }
-    if (getSplitNum() <= 0) {
-      throw new IllegalArgumentException("Splits number must be greater than 0.");
+    if (!containsMacro(NAME_SPLIT_NUM) && getSplitNum() < 1) {
+      collector.addFailure(
+        String.format("Invalid value for Splits Number. Must be at least 1, but got: '%d'", getSplitNum()),
+        null)
+        .withConfigProperty(NAME_SPLIT_NUM);
     }
-
-    if (getSplitNum() > 1 && orderBy == null) {
-      throw new IllegalArgumentException("Order by field required if Splits number greater than 1.");
+    if (!containsMacro(NAME_SPLIT_NUM) && getSplitNum() > 1) {
+      if (!containsMacro(NAME_ORDER_BY) &&  orderBy == null) {
+        collector.addFailure("Order by field required if Splits number greater than 1.", null)
+          .withConfigProperty(NAME_ORDER_BY);
+      }
     }
   }
 
-
+  /**
+   * Builder for Neo4jSourceConfig
+   */
   public static final class Builder {
     private String referenceName;
     private String neo4jHost;
@@ -183,7 +203,9 @@ public class Neo4jSourceConfig extends PluginConfig {
     private String username;
     private String password;
     private String inputQuery;
+    @Nullable
     private Integer splitNum;
+    @Nullable
     private String orderBy;
 
     private Builder() {
