@@ -21,6 +21,7 @@ import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.plugin.PluginConfig;
 import io.cdap.cdap.etl.api.FailureCollector;
+import io.cdap.plugin.neo4j.Neo4jConstants;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,41 +32,35 @@ import javax.annotation.Nullable;
  */
 public class Neo4jSourceConfig extends PluginConfig {
 
-  public static final String NEO4J_CONNECTION_STRING_FORMAT = "jdbc:neo4j:bolt://%s:%s/?username=%s,password=%s";
   private static final List<String> unavailableQueryKeywords =
     Arrays.asList("UNWIND", "CREATE", "DELETE", "SET", "REMOVE", "MERGE");
   private static final List<String> requiredQueryKeywords = Arrays.asList("MATCH", "RETURN");
 
-  public static final String REFERENCE_NAME = "referenceName";
-  public static final String NAME_HOST_STRING = "neo4jHost";
-  public static final String NAME_PORT_STRING = "neo4jPort";
-  public static final String NAME_USERNAME = "username";
-  public static final String NAME_PASSWORD = "password";
   public static final String NAME_INPUT_QUERY = "inputQuery";
   public static final String NAME_SPLIT_NUM = "splitNum";
   public static final String NAME_ORDER_BY = "orderBy";
 
-  @Name(REFERENCE_NAME)
+  @Name(Neo4jConstants.NAME_REFERENCE_NAME)
   @Description("This will be used to uniquely identify this source for lineage, annotating metadata, etc.")
   private String referenceName;
 
   @Macro
-  @Name(NAME_HOST_STRING)
+  @Name(Neo4jConstants.NAME_HOST_STRING)
   @Description("Neo4j database host.")
   private String neo4jHost;
 
   @Macro
-  @Name(NAME_PORT_STRING)
+  @Name(Neo4jConstants.NAME_PORT_STRING)
   @Description("Neo4j database port.")
   private int neo4jPort;
 
   @Macro
-  @Name(NAME_USERNAME)
+  @Name(Neo4jConstants.NAME_USERNAME)
   @Description("User to use to connect to the Neo4j database.")
   private String username;
 
   @Macro
-  @Name(NAME_PASSWORD)
+  @Name(Neo4jConstants.NAME_PASSWORD)
   @Description("Password to use to connect to the Neo4j database.")
   private String password;
 
@@ -84,7 +79,7 @@ public class Neo4jSourceConfig extends PluginConfig {
   @Nullable
   @Name(NAME_ORDER_BY)
   @Description("Field Name which will be used for ordering during splits generation. " +
-    "This is required unless numSplits is set to one.")
+    "This is required unless numSplits is set to one and 'ORDER BY' keyword not exist in Input Query.")
   private String orderBy;
 
   public Neo4jSourceConfig(String referenceName, String neo4jHost, int neo4jPort, String username, String password,
@@ -160,7 +155,7 @@ public class Neo4jSourceConfig extends PluginConfig {
   }
 
   public String getConnectionString() {
-    return String.format(Neo4jSourceConfig.NEO4J_CONNECTION_STRING_FORMAT, getNeo4jHost(), getNeo4jPort(),
+    return String.format(Neo4jConstants.NEO4J_CONNECTION_STRING_FORMAT, getNeo4jHost(), getNeo4jPort(),
                          getUsername(), getPassword());
   }
 
@@ -186,8 +181,11 @@ public class Neo4jSourceConfig extends PluginConfig {
         .withConfigProperty(NAME_SPLIT_NUM);
     }
     if (!containsMacro(NAME_SPLIT_NUM) && getSplitNum() > 1) {
-      if (!containsMacro(NAME_ORDER_BY) &&  orderBy == null) {
-        collector.addFailure("Order by field required if Splits number greater than 1.", null)
+      boolean existOrderBy = inputQuery.toUpperCase().contains(" ORDER BY ");
+      if (!containsMacro(NAME_ORDER_BY) && !existOrderBy && orderBy == null) {
+        collector.addFailure(
+          "Order by field required if Splits number greater than 1 and ORDER BY not exists in Input query.",
+          null)
           .withConfigProperty(NAME_ORDER_BY);
       }
     }

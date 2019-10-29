@@ -24,7 +24,7 @@
           }
         },
         {
-          "widget-type": "number",
+          "widget-type": "textbox",
           "label": "Neo4j Port",
           "name": "neo4jPort",
           "widget-attributes": {
@@ -71,7 +71,7 @@
           "label": "Splits Number",
           "name": "splitNum",
           "widget-attributes": {
-            "default": 10,
+            "default": 1,
             "placeholder": "Number of splits."
           }
         },

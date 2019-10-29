@@ -17,6 +17,7 @@
 package io.cdap.plugin.neo4j.source;
 
 import io.cdap.cdap.etl.mock.validation.MockFailureCollector;
+import io.cdap.plugin.neo4j.ValidationAssertions;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -116,4 +117,17 @@ public class Neo4jSourceConfigTest {
     config.validate(collector);
     Assert.assertTrue(collector.getValidationFailures().isEmpty());
   }
+
+  @Test
+  public void testValidateSplitNumberWithOrderByInQuery() {
+    MockFailureCollector collector = new MockFailureCollector(MOCK_STAGE);
+    Neo4jSourceConfig config = Neo4jSourceConfig.builder(VALID_CONFIG)
+      .setSplitNum(10)
+      .setInputQuery("MATCH (n:Test) RETURN n ORDER BY n.id")
+      .build();
+
+    config.validate(collector);
+    Assert.assertTrue(collector.getValidationFailures().isEmpty());
+  }
+
 }

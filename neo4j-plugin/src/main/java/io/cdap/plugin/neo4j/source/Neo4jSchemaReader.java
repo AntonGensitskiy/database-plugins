@@ -158,6 +158,9 @@ public class Neo4jSchemaReader extends CommonSchemaReader {
     if (Long.class.equals(objClass)) {
       return Schema.of(Schema.Type.LONG);
     }
+    if (Integer.class.equals(objClass)) {
+      return Schema.of(Schema.Type.INT);
+    }
     if (Double.class.equals(objClass)) {
       return Schema.of(Schema.Type.DOUBLE);
     }

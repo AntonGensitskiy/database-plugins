@@ -47,9 +47,11 @@ public class Neo4jDBRecordReader<T extends DBWritable> extends DBRecordReader<T>
     StringBuilder query = new StringBuilder();
 
     //PREBUILT QUERY
+    String inputQuery = getDBConf().getInputQuery();
+    boolean existOrderBy = inputQuery.toUpperCase().contains(" ORDER BY ");
     query.append(getDBConf().getInputQuery());
     String orderBy = getDBConf().getInputOrderBy();
-    if (orderBy != null && orderBy.length() > 0) {
+    if (!existOrderBy && orderBy != null && orderBy.length() > 0) {
       query.append(" ORDER BY ").append(orderBy);
     }
 

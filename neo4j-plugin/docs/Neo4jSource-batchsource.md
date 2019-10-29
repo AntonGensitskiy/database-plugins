@@ -30,7 +30,7 @@ Query example: 'MATCH (n:Label) RETURN n.property_1, n.property_2'.
 **Splits Number:** The number of splits to generate. If set to one, the orderBy is not needed.
 
 **Order By:** Field Name which will be used for ordering during splits generation. This is required unless numSplits 
-is set to one.
+is set to one and 'ORDER BY' keyword not exist in Input Query.
 
 
 Data Types Mapping
@@ -53,7 +53,7 @@ Data Types Mapping
     | LocalDateTime                   | timestamp-micros       |                                                    |
     | Node                            | record                 |                                                    |
     | Relationship                    | record                 |                                                    |
-    | Duration                        |                        |                                                    |
-    | Point                           |                        |                                                    |
+    | Duration                        | record                 |                                                    |
+    | Point                           | record                 |                                                    |
     | Path                            |                        |                                                    |
    

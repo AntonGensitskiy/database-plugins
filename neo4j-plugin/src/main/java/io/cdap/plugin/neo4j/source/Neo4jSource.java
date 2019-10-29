@@ -38,6 +38,7 @@ import io.cdap.plugin.common.SourceInputFormatProvider;
 import io.cdap.plugin.db.ConnectionConfig;
 import io.cdap.plugin.db.ConnectionConfigAccessor;
 import io.cdap.plugin.db.SchemaReader;
+import io.cdap.plugin.neo4j.Neo4jRecord;
 import io.cdap.plugin.util.DBUtils;
 import io.cdap.plugin.util.DriverCleanup;
 import org.apache.hadoop.io.LongWritable;
@@ -81,6 +82,8 @@ public class Neo4jSource extends ReferenceBatchSource<LongWritable, Neo4jRecord,
   public void initialize(BatchRuntimeContext context) throws Exception {
     super.initialize(context);
     driverClass = context.loadPluginClass(getJDBCPluginId());
+
+    LOG.debug("init driver class " + (driverClass != null ? driverClass.getName() : null));
   }
 
   @Override
@@ -115,6 +118,8 @@ public class Neo4jSource extends ReferenceBatchSource<LongWritable, Neo4jRecord,
 
     ConnectionConfigAccessor connectionConfigAccessor = new ConnectionConfigAccessor();
     Class<? extends Driver> driverClass = context.loadPluginClass(getJDBCPluginId());
+
+    LOG.debug("driver class " + (driverClass != null ? driverClass.getName() : null));
 
     DBConfiguration.configureDB(connectionConfigAccessor.getConfiguration(), driverClass.getName(),
                                 config.getConnectionString(), config.getUsername(), config.getPassword());

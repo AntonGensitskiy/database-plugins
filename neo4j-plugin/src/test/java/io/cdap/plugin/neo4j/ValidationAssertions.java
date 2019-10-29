@@ -14,7 +14,7 @@
  * the License.
  */
 
-package io.cdap.plugin.neo4j.source;
+package io.cdap.plugin.neo4j;
 
 import io.cdap.cdap.etl.api.validation.CauseAttributes;
 import io.cdap.cdap.etl.api.validation.ValidationFailure;
