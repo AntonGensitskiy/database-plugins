@@ -76,8 +76,9 @@ public class Neo4jSink extends ReferenceBatchSink<StructuredRecord, Neo4jRecord,
   @Override
   public void configurePipeline(PipelineConfigurer pipelineConfigurer) {
     super.configurePipeline(pipelineConfigurer);
+    Schema inputSchema = pipelineConfigurer.getStageConfigurer().getInputSchema();
     FailureCollector collector = pipelineConfigurer.getStageConfigurer().getFailureCollector();
-    config.validate(collector);
+    config.validate(collector, inputSchema);
 
     Class<? extends Driver> driverClass = pipelineConfigurer.usePluginClass(
       ConnectionConfig.JDBC_PLUGIN_TYPE,
@@ -113,7 +114,7 @@ public class Neo4jSink extends ReferenceBatchSink<StructuredRecord, Neo4jRecord,
   @Override
   public void prepareRun(BatchSinkContext context) throws Exception {
     FailureCollector collector = context.getFailureCollector();
-    config.validate(collector);
+    config.validate(collector, context.getInputSchema());
     collector.getOrThrowException();
 
     Schema outputSchema = context.getInputSchema();
