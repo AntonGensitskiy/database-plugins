@@ -30,7 +30,6 @@ import java.sql.SQLException;
 
 /**
  * A RecordReader that reads records from a Neo4j.
- * @param <T>
  */
 public class Neo4jDBRecordReader<T extends DBWritable> extends DBRecordReader<T> {
 

@@ -32,9 +32,9 @@ import javax.annotation.Nullable;
  */
 public class Neo4jSourceConfig extends PluginConfig {
 
-  private static final List<String> unavailableQueryKeywords =
+  private static final List<String> UNAVAILABLE_QUERY_KEYWORDS =
     Arrays.asList("UNWIND", "CREATE", "DELETE", "SET", "REMOVE", "MERGE");
-  private static final List<String> requiredQueryKeywords = Arrays.asList("MATCH", "RETURN");
+  private static final List<String> REQUIRED_QUERY_KEYWORDS = Arrays.asList("MATCH", "RETURN");
 
   public static final String NAME_INPUT_QUERY = "inputQuery";
   public static final String NAME_SPLIT_NUM = "splitNum";
@@ -52,7 +52,7 @@ public class Neo4jSourceConfig extends PluginConfig {
   @Macro
   @Name(Neo4jConstants.NAME_PORT_STRING)
   @Description("Neo4j database port.")
-  private int neo4jPort;
+  private Integer neo4jPort;
 
   @Macro
   @Name(Neo4jConstants.NAME_USERNAME)
@@ -82,7 +82,7 @@ public class Neo4jSourceConfig extends PluginConfig {
     "This is required unless numSplits is set to one and 'ORDER BY' keyword not exist in Input Query.")
   private String orderBy;
 
-  public Neo4jSourceConfig(String referenceName, String neo4jHost, int neo4jPort, String username, String password,
+  public Neo4jSourceConfig(String referenceName, String neo4jHost, Integer neo4jPort, String username, String password,
                            String inputQuery, int splitNum, @Nullable String orderBy) {
     this.referenceName = referenceName;
     this.neo4jHost = neo4jHost;
@@ -130,7 +130,7 @@ public class Neo4jSourceConfig extends PluginConfig {
   }
 
   public int getNeo4jPort() {
-    return neo4jPort;
+    return neo4jPort == null ? 0 : neo4jPort;
   }
 
   public String getUsername() {
@@ -160,17 +160,17 @@ public class Neo4jSourceConfig extends PluginConfig {
   }
 
   public void validate(FailureCollector collector) {
-    if (unavailableQueryKeywords.stream().parallel().anyMatch(inputQuery.toUpperCase()::contains)) {
+    if (UNAVAILABLE_QUERY_KEYWORDS.stream().parallel().anyMatch(inputQuery.toUpperCase()::contains)) {
       collector.addFailure(
         String.format("The input request must not contain any of the following keywords: '%s'",
-                      unavailableQueryKeywords.toString()),
+                      UNAVAILABLE_QUERY_KEYWORDS.toString()),
         "Proved correct Input query.")
         .withConfigProperty(NAME_INPUT_QUERY);
     }
-    if (!requiredQueryKeywords.stream().parallel().allMatch(inputQuery.toUpperCase()::contains)) {
+    if (!REQUIRED_QUERY_KEYWORDS.stream().parallel().allMatch(inputQuery.toUpperCase()::contains)) {
       collector.addFailure(
         String.format("The input request must contain following keywords: '%s'",
-                      requiredQueryKeywords.toString()),
+                      REQUIRED_QUERY_KEYWORDS.toString()),
         "Proved correct Input query.")
         .withConfigProperty(NAME_INPUT_QUERY);
     }
@@ -197,7 +197,7 @@ public class Neo4jSourceConfig extends PluginConfig {
   public static final class Builder {
     private String referenceName;
     private String neo4jHost;
-    private int neo4jPort;
+    private Integer neo4jPort;
     private String username;
     private String password;
     private String inputQuery;

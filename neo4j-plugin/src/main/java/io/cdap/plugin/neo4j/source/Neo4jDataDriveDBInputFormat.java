@@ -37,7 +37,6 @@ import java.util.Properties;
 
 /**
  * A InputFormat that reads input data from an Neo4j.
- * @param <T>
  */
 public class Neo4jDataDriveDBInputFormat<T extends DBWritable> extends DBInputFormat {
 

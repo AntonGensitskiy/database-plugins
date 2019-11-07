@@ -82,8 +82,6 @@ public class Neo4jSource extends ReferenceBatchSource<LongWritable, Neo4jRecord,
   public void initialize(BatchRuntimeContext context) throws Exception {
     super.initialize(context);
     driverClass = context.loadPluginClass(getJDBCPluginId());
-
-    LOG.debug("init driver class " + (driverClass != null ? driverClass.getName() : null));
   }
 
   @Override
@@ -118,8 +116,6 @@ public class Neo4jSource extends ReferenceBatchSource<LongWritable, Neo4jRecord,
 
     ConnectionConfigAccessor connectionConfigAccessor = new ConnectionConfigAccessor();
     Class<? extends Driver> driverClass = context.loadPluginClass(getJDBCPluginId());
-
-    LOG.debug("driver class " + (driverClass != null ? driverClass.getName() : null));
 
     DBConfiguration.configureDB(connectionConfigAccessor.getConfiguration(), driverClass.getName(),
                                 config.getConnectionString(), config.getUsername(), config.getPassword());
