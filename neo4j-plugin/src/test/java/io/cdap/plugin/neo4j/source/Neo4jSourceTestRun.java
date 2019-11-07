@@ -141,8 +141,6 @@ public class Neo4jSourceTestRun extends NeojlPluginTestBase {
     String importQuery =
       "MATCH (person:CDAP_Person) RETURN person.name AS name";
 
-    List<String> names = Arrays.asList("Ian McKellen", "Tom Hanks", "Paul Bettany", "Audrey Tautou");
-
     ImmutableMap<String, String> sourceProps = ImmutableMap.<String, String>builder()
       .put(Neo4jConstants.NAME_REFERENCE_NAME, "neo4jSource")
       .putAll(BASE_PROPS)
@@ -157,13 +155,13 @@ public class Neo4jSourceTestRun extends NeojlPluginTestBase {
       sourceProps
     );
 
-    ETLPlugin sinkConfig = MockSink.getPlugin("propertiesOutputTable");
+    ETLPlugin sinkConfig = MockSink.getPlugin("splitAndOrderOutputTable");
 
     ApplicationManager appManager = deployETL(sourceConfig, sinkConfig,
-                                              DATAPIPELINE_ARTIFACT, "testProperties");
+                                              DATAPIPELINE_ARTIFACT, "testSplitAndOrder");
     runETLOnce(appManager, ImmutableMap.of("logical.start.time", String.valueOf(CURRENT_TS)));
 
-    DataSetManager<Table> outputManager = getDataset("propertiesOutputTable");
+    DataSetManager<Table> outputManager = getDataset("splitAndOrderOutputTable");
     List<StructuredRecord> records = MockSink.readOutput(outputManager);
     Assert.assertEquals(11, records.size());
 
@@ -174,8 +172,6 @@ public class Neo4jSourceTestRun extends NeojlPluginTestBase {
     String importQuery =
       "MATCH (person:CDAP_Person) RETURN person.name AS name ORDER BY name";
 
-    List<String> names = Arrays.asList("Ian McKellen", "Tom Hanks", "Paul Bettany", "Audrey Tautou");
-
     ImmutableMap<String, String> sourceProps = ImmutableMap.<String, String>builder()
       .put(Neo4jConstants.NAME_REFERENCE_NAME, "neo4jSource")
       .putAll(BASE_PROPS)
@@ -190,13 +186,13 @@ public class Neo4jSourceTestRun extends NeojlPluginTestBase {
       sourceProps
     );
 
-    ETLPlugin sinkConfig = MockSink.getPlugin("propertiesOutputTable");
+    ETLPlugin sinkConfig = MockSink.getPlugin("splitAndQueryOrderOutputTable");
 
     ApplicationManager appManager = deployETL(sourceConfig, sinkConfig,
-                                              DATAPIPELINE_ARTIFACT, "testProperties");
+                                              DATAPIPELINE_ARTIFACT, "testSplitAndQueryOrder");
     runETLOnce(appManager, ImmutableMap.of("logical.start.time", String.valueOf(CURRENT_TS)));
 
-    DataSetManager<Table> outputManager = getDataset("propertiesOutputTable");
+    DataSetManager<Table> outputManager = getDataset("splitAndQueryOrderOutputTable");
     List<StructuredRecord> records = MockSink.readOutput(outputManager);
     Assert.assertEquals(11, records.size());
 

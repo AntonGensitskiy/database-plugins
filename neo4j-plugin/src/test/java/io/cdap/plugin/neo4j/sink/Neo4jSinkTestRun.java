@@ -39,14 +39,9 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-/**
- *
- */
 public class Neo4jSinkTestRun extends NeojlPluginTestBase {
   private static final Schema DURATION_SCHEMA = Schema.recordOf(
     "duration",
@@ -153,13 +148,13 @@ public class Neo4jSinkTestRun extends NeojlPluginTestBase {
         int[] intArray = expected.get("array_int");
         List intList = (List) node.get("array_int");
         Assert.assertEquals(intArray.length, intList.size());
-        for (int i = 0; i < intArray.length; i ++) {
+        for (int i = 0; i < intArray.length; i++) {
           Assert.assertEquals((long) intArray[i], intList.get(i));
         }
         String[] stringArray = expected.get("array_string");
         List stringList = (List) node.get("array_string");
         Assert.assertEquals(stringArray.length, stringList.size());
-        for (int i = 0; i < stringArray.length; i ++) {
+        for (int i = 0; i < stringArray.length; i++) {
           Assert.assertEquals(stringArray[i], stringList.get(i));
         }
         Assert.assertEquals(expected.getDate("date_val"), ((Date) node.get("date_val")).toLocalDate());
