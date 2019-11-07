@@ -35,6 +35,9 @@ import java.util.stream.Collectors;
  */
 public class Neo4jSinkConfig extends PluginConfig {
 
+  private static final List<String> UNAVAILABLE_QUERY_KEYWORDS =
+    Arrays.asList("UNWIND", "DELETE", "SET", "REMOVE");
+
   public static final String NAME_OUTPUT_QUERY = "outputQuery";
 
   @Name(Neo4jConstants.NAME_REFERENCE_NAME)
@@ -49,7 +52,7 @@ public class Neo4jSinkConfig extends PluginConfig {
   @Macro
   @Name(Neo4jConstants.NAME_PORT_STRING)
   @Description("Neo4j database port.")
-  private String neo4jPort;
+  private Integer neo4jPort;
 
   @Macro
   @Name(Neo4jConstants.NAME_USERNAME)
@@ -66,7 +69,7 @@ public class Neo4jSinkConfig extends PluginConfig {
     "'CREATE (n:<label_field> $(*))' or 'CREATE (n:<label_field> $(property_1, property_2))'")
   private String outputQuery;
 
-  public Neo4jSinkConfig(String referenceName, String neo4jHost, String neo4jPort, String username, String password,
+  public Neo4jSinkConfig(String referenceName, String neo4jHost, Integer neo4jPort, String username, String password,
                            String outputQuery) {
     this.referenceName = referenceName;
     this.neo4jHost = neo4jHost;
@@ -108,7 +111,7 @@ public class Neo4jSinkConfig extends PluginConfig {
   }
 
   public int getNeo4jPort() {
-    return Integer.valueOf(neo4jPort);
+    return neo4jPort == null ? 0 : neo4jPort;
   }
 
   public String getUsername() {
@@ -130,14 +133,12 @@ public class Neo4jSinkConfig extends PluginConfig {
 
   public void validate(FailureCollector collector, Schema inputSchema) {
 
-    if (!containsMacro(Neo4jConstants.NAME_PORT_STRING)) {
-      try {
-        Integer.valueOf(neo4jPort);
-      } catch (NumberFormatException e) {
-        collector.addFailure("Neo4j Port field must contained only numbers", null)
-          .withConfigProperty(Neo4jConstants.NAME_PORT_STRING)
-          .withStacktrace(e.getStackTrace());
-      }
+    if (UNAVAILABLE_QUERY_KEYWORDS.stream().parallel().anyMatch(outputQuery.toUpperCase()::contains)) {
+      collector.addFailure(
+        String.format("The input request must not contain any of the following keywords: '%s'",
+                      UNAVAILABLE_QUERY_KEYWORDS.toString()),
+        "Proved correct Input query.")
+        .withConfigProperty(NAME_OUTPUT_QUERY);
     }
 
     List<String> schemaFields = inputSchema.getFields().stream().map(Schema.Field::getName)
@@ -176,7 +177,8 @@ public class Neo4jSinkConfig extends PluginConfig {
         if (!schemaFields.contains(value)) {
           collector.addFailure("Property '%s' not exists in input schema.",
                                "Provide property that present in input schema.")
-            .withConfigProperty(NAME_OUTPUT_QUERY);
+            .withConfigProperty(NAME_OUTPUT_QUERY)
+            .withInputSchemaField(value);
           break;
         }
       }
@@ -189,7 +191,7 @@ public class Neo4jSinkConfig extends PluginConfig {
   public static final class Builder {
     private String referenceName;
     private String neo4jHost;
-    private String neo4jPort;
+    private Integer neo4jPort;
     private String username;
     private String password;
     private String outputQuery;
@@ -207,7 +209,7 @@ public class Neo4jSinkConfig extends PluginConfig {
       return this;
     }
 
-    public Builder setNeo4jPort(String neo4jPort) {
+    public Builder setNeo4jPort(Integer neo4jPort) {
       this.neo4jPort = neo4jPort;
       return this;
     }

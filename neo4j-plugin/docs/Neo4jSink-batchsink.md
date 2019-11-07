@@ -21,7 +21,8 @@ Properties
 **Neo4j Port:** Neo4j database port.
 
 **Output Query:** The query to use to export data to the Neo4j database. Query example: 'CREATE (n:<label_field> $(*))' 
-or 'CREATE (n:<label_field> $(property_1, property_2))'.
+or 'CREATE (n:<label_field> $(property_1, property_2))'. Addition information can be found on 
+https://wiki.cask.co/display/CE/Neo4j+database+plugin
 
 **Username:** User to use to connect to the Neo4j database.
 
@@ -43,7 +44,7 @@ Data Types Mapping
     | date                   | Date                                  |                                              |
     | time-micros            | Time, LocalTime                       |                                              |
     | timestamp-micros       | DateTime, LocalDateTime               |                                              |
-    | record                 | Node, Relationship, Duration, Point   | Depend on record fields                      |
+    | record                 | Duration, Point                       | Depending on record fields                   |
 
 
    
