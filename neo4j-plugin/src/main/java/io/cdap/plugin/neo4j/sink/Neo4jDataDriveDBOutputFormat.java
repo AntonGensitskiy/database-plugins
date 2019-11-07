@@ -45,6 +45,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * A OutputFormat that write data to Neo4j.
+ *
  * @param <K> - Key passed to this class to be written
  * @param <V> - Value passed to this class to be written. The value is ignored.
  */
@@ -61,13 +63,6 @@ public class Neo4jDataDriveDBOutputFormat<K extends DBWritable, V> extends DBOut
   @Override
   public RecordWriter<K, V> getRecordWriter(TaskAttemptContext context) throws IOException {
     conf = context.getConfiguration();
-    DBConfiguration dbConf = new DBConfiguration(conf);
-
-    String[] fieldNames = dbConf.getOutputFieldNames();
-
-    if (fieldNames == null) {
-      fieldNames = new String[dbConf.getOutputFieldCount()];
-    }
 
     try {
       Connection connection = getConnection(conf);
@@ -127,6 +122,7 @@ public class Neo4jDataDriveDBOutputFormat<K extends DBWritable, V> extends DBOut
       throw Throwables.propagate(ex);
     }
   }
+
 
   private Connection getConnection(Configuration conf) {
     Connection connection;

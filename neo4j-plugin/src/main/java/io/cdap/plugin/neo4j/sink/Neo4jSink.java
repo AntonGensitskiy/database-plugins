@@ -102,7 +102,6 @@ public class Neo4jSink extends ReferenceBatchSink<StructuredRecord, Neo4jRecord,
 
     driverClass = context.loadPluginClass(getJDBCPluginId());
 
-    LOG.debug("init driver class " + (driverClass != null ? driverClass.getName() : null));
     Schema outputSchema = Optional.ofNullable(context.getInputSchema()).orElse(null);
 
     if (outputSchema != null) {
@@ -121,8 +120,6 @@ public class Neo4jSink extends ReferenceBatchSink<StructuredRecord, Neo4jRecord,
     setColumnsInfo(outputSchema.getFields());
     emitLineage(context, outputSchema.getFields());
     driverClass = context.loadPluginClass(getJDBCPluginId());
-
-    LOG.debug("driver class " + (driverClass != null ? driverClass.getName() : null));
 
     ConnectionConfigAccessor configAccessor = new ConnectionConfigAccessor();
     configAccessor.getConfiguration().set(DBConfiguration.DRIVER_CLASS_PROPERTY, driverClass.getName());

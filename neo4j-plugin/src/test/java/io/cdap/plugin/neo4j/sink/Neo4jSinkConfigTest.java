@@ -18,7 +18,6 @@ package io.cdap.plugin.neo4j.sink;
 
 import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.etl.mock.validation.MockFailureCollector;
-import io.cdap.plugin.neo4j.Neo4jConstants;
 import io.cdap.plugin.neo4j.ValidationAssertions;
 import org.junit.Assert;
 import org.junit.Test;
@@ -45,7 +44,7 @@ public class Neo4jSinkConfigTest {
   private static final Neo4jSinkConfig VALID_CONFIG = new Neo4jSinkConfig(
     "ref_name",
     "localhost",
-    "7687",
+    7687,
     "user",
     "password",
     "CREATE (n:Test $(*))"
@@ -57,20 +56,6 @@ public class Neo4jSinkConfigTest {
     VALID_CONFIG.validate(collector, SCHEMA);
 
     Assert.assertTrue(collector.getValidationFailures().isEmpty());
-  }
-
-  @Test
-  public void testValidateHostPort() {
-    MockFailureCollector collector = new MockFailureCollector(MOCK_STAGE);
-    Neo4jSinkConfig config = Neo4jSinkConfig.builder(VALID_CONFIG)
-      .setNeo4jPort("a3b")
-      .build();
-    List<List<String>> paramNames = Collections.singletonList(
-      Collections.singletonList(Neo4jConstants.NAME_PORT_STRING)
-    );
-
-    config.validate(collector, SCHEMA);
-    ValidationAssertions.assertValidationFailed(collector, paramNames);
   }
 
   @Test
